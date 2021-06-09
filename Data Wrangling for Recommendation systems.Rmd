@@ -1,0 +1,353 @@
+---
+title: "Cosine Similarity and Weighted Average"
+author: "Fensals"
+date: "5/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Importing all necessary libraries
+
+library(readxl)
+library(dplyr)
+library(tidyverse)
+library(data.table)
+library(lsa)
+library(splitstackshape)
+
+```
+
+
+```{r}
+#importing the worksheets in the data set and re naming them
+
+product_table <- read_excel('sample_data_May.11.2021.xlsx')
+person_table <- read_excel('sample_data_May.11.2021.xlsx', 2)
+category_table <- read_excel('sample_data_May.11.2021.xlsx', 3)
+```
+
+
+```{r}
+#confirming that worksheets have been brought in correctly
+
+head(product_table)
+head(person_table)
+head(category_table)
+```
+
+
+
+
+```{r}
+#Splitting the Product and Person Table based on the Categories in the Category_Table
+
+category_A_Product <- select(product_table, Product_ID,Feature_1,Feature_2,Feature_3,Feature_4,Feature_5,Feature_6,Feature_7,Feature_8,Feature_9,Feature_10,Feature_11,Feature_12,Feature_13,Feature_14,Feature_15,Feature_16,Feature_17,Feature_18,Feature_19,Feature_20,Feature_21,Feature_22,Feature_23,Feature_24,Feature_25,Feature_26,Feature_27,Feature_28,Feature_29,Feature_30,Feature_31,Feature_32,Feature_33)
+
+category_A_Person <- select(person_table, Person_ID,Feature_1,Feature_2,Feature_3,Feature_4,Feature_5,Feature_6,Feature_7,Feature_8,Feature_9,Feature_10,Feature_11,Feature_12,Feature_13,Feature_14,Feature_15,Feature_16,Feature_17,Feature_18,Feature_19,Feature_20,Feature_21,Feature_22,Feature_23,Feature_24,Feature_25,Feature_26,Feature_27,Feature_28,Feature_29,Feature_30,Feature_31,Feature_32,Feature_33)
+
+```
+
+
+```{r}
+category_B_Product <- select(product_table, Product_ID, Feature_34,
+Feature_35)
+
+category_B_Person <- select(person_table, Person_ID, Feature_34,
+Feature_35)
+```
+
+
+
+```{r}
+category_C_Product <- select(product_table, Product_ID, Feature_36,Feature_37,Feature_38,Feature_39)
+
+category_C_Person <- select(person_table, Person_ID, Feature_36,Feature_37,Feature_38,Feature_39)
+
+
+```
+
+
+```{r}
+category_D_Product <- select(product_table, Product_ID, Feature_40,Feature_41,Feature_42,Feature_43,Feature_44,Feature_45,Feature_46,Feature_47,Feature_48)
+
+category_D_Person <- select(person_table, Person_ID, Feature_40,Feature_41,Feature_42,Feature_43,Feature_44,Feature_45,Feature_46,Feature_47,Feature_48)
+```
+
+
+
+
+```{r}
+#Transposing each data frame, making first row into column names and changing data type to double/numeric
+#This is necessary to make it easier to loop through the dataset
+
+category_A_Person2 <- as.data.frame(t(category_A_Person))
+category_A_Person2 <- data.frame(category_A_Person2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_A_Person2 <- lapply(category_A_Person2,as.numeric)
+category_A_Person <- data.frame(category_A_Person2)
+
+```
+
+
+
+```{r}
+category_A_Product2 <- as.data.frame(t(category_A_Product))
+category_A_Product2 <- data.frame(category_A_Product2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_A_Product2 <- lapply(category_A_Product2,as.numeric)
+category_A_Product <- data.frame(category_A_Product2)
+
+```
+
+
+
+```{r}
+
+
+category_B_Person2 <- as.data.frame(t(category_B_Person))
+category_B_Person2 <- data.frame(category_B_Person2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_B_Person2 <- lapply(category_B_Person2,as.numeric)
+category_B_Person <- data.frame(category_B_Person2)
+
+```
+
+
+
+```{r}
+category_B_Product2 <- as.data.frame(t(category_B_Product))
+category_B_Product2 <- data.frame(category_B_Product2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_B_Product2 <- lapply(category_B_Product2,as.numeric)
+category_B_Product <- data.frame(category_B_Product2)
+
+```
+
+
+```{r}
+category_C_Person2 <- as.data.frame(t(category_C_Person))
+category_C_Person2 <- data.frame(category_C_Person2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_C_Person2 <- lapply(category_C_Person2,as.numeric)
+category_C_Person <- data.frame(category_C_Person2)
+
+```
+
+
+
+```{r}
+category_C_Product2 <- as.data.frame(t(category_C_Product))
+category_C_Product2 <- data.frame(category_C_Product2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_C_Product2 <- lapply(category_C_Product2,as.numeric)
+category_C_Product <- data.frame(category_C_Product2)
+
+```
+
+
+
+```{r}
+category_D_Person2 <- as.data.frame(t(category_D_Person))
+category_D_Person2 <- data.frame(category_D_Person2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_D_Person2 <- lapply(category_D_Person2,as.double)
+category_D_Person <- data.frame(category_D_Person2)
+
+```
+
+
+
+```{r}
+category_D_Product2 <- as.data.frame(t(category_D_Product))
+category_D_Product2 <- data.frame(category_D_Product2) %>%
+  `colnames<-`(.[1, ]) %>%
+  .[-1, ]
+
+category_D_Product2 <- lapply(category_D_Product2,as.numeric)
+category_D_Product <- data.frame(category_D_Product2)
+
+```
+
+```{r}
+#checking one of the tables to confirm that it is in the required format
+
+head(category_D_Product)
+```
+
+```{r}
+#Create empty tables to contain result from iterations
+
+Category_A <- NULL
+Category_B <- NULL
+Category_C <- NULL
+Category_D <- NULL
+```
+
+
+###Creating nested for loops to iterate through the data, get the cosine similarity and append it to the empty tables
+
+# Category A
+```{r}
+
+for (person in category_A_Person) {
+  for (product in category_A_Product){
+  
+    Category_A <- append(Category_A, (as.vector(cosine(person,product))) )
+    
+  }
+}
+
+```
+
+
+#Category B
+
+```{r}
+for (person in category_B_Person) {
+  for (product in category_B_Product){
+  
+    Category_B <- append(Category_B, (as.vector(cosine(person,product))) )
+    
+  }
+}
+
+```
+
+
+#Category C
+```{r}
+for (person in category_C_Person) {
+  for (product in category_C_Product){
+  
+    Category_C <- append(Category_C, (as.vector(cosine(person,product))) )
+    
+  }
+}
+
+```
+
+
+#Category D
+
+```{r}
+for (person in category_D_Person) {
+  for (product in category_D_Product){
+  
+    Category_D <- append(Category_D, (as.vector(cosine(person,product))) )
+    
+  }
+}
+
+```
+
+
+
+```{r}
+#Binding the categories into a table
+
+cosine_sim <- cbind(Category_A, Category_B, Category_C, Category_D)
+```
+
+```{r}
+#Checking to confirm result
+head(cosine_sim)
+```
+
+```{r}
+#changing the table into a dataframe
+cosine_sim <- as.data.frame(cosine_sim)
+```
+
+
+
+```{r}
+#Creating the  column for corresponding Product_ID
+
+duprow <- c(nrow(person_table))
+
+index <- rep(1:nrow(product_table), duprow)
+
+Product_ID <- (product_table[1])[index,]
+
+```
+
+
+```{r}
+#Creating the column for correspinding person_ID
+
+Person_ID <- expandRows(person_table[1], count = nrow(product_table), count.is.col = F)
+```
+
+
+
+```{r}
+#Binding the Person_ID and Product_ID columns to the cosine similarity table
+
+Output <- cbind(Person_ID, Product_ID, cosine_sim) 
+
+head(Output)
+```
+
+
+
+```{r}
+#Calculating the Weighted_Average
+
+weights <- c(2,1,5,10) #Creating a list for the weights
+
+x <- t(cosine_sim) #transposing the cosine similarity table for iteration
+
+x <- as.data.frame(x)#converting transposed table back into a data frame
+
+Weighted_Average<- NULL #Creating an empty list to contain the weighted means
+
+#looping through to calculate for the weighted mean
+
+for (i in x){
+  
+  Weighted_Average <- append(Weighted_Average, as.vector(weighted.mean(i, weights)))
+  
+}
+
+Weighted_Average <- as.data.frame(Weighted_Average)
+
+#confirming the structure
+dim(Weighted_Average)
+```
+
+
+```{r}
+#Adding the weighted average to the table for the Final Output.
+
+Final_Output <- cbind(Output, Weighted_Average)
+
+dim(Final_Output)
+
+head(Final_Output)
+```
+
+
+```{r}
+Final_sorted <- Final_Output [order(Person_ID, -Weighted_Average),]
+
+rownames(Final_sorted) <- NULL
+view(Final_sorted)
+```
